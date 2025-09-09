@@ -125,6 +125,7 @@
             align-items: center;
             justify-content: center;
             position: relative;
+            flex-direction: column;
         }
 
         .balloon {
@@ -422,7 +423,7 @@
             timeLeft: 30,
             gameTimer: null,
             lastMotion: 0,
-            motionThreshold: 15, // Lower threshold for easier activation
+            motionThreshold: 12, // Lower threshold for easier activation
             deflateRate: 2.5,
             maxBalloonSize: 100,
             scores: []
@@ -902,7 +903,7 @@
                 timeLeft: 30,
                 gameTimer: null,
                 lastMotion: 0,
-                motionThreshold: 15,
+                motionThreshold: 12,
                 deflateRate: 2.5,
                 maxBalloonSize: 100,
                 scores: []
