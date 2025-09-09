@@ -425,7 +425,7 @@
             lastMotion: 0,
             motionThreshold: 12, // Lower threshold for easier activation
             deflateRate: 2.5,
-            maxBalloonSize: 100,
+            maxBalloonSize: 150,
             scores: []
         };
 
@@ -731,7 +731,7 @@
 
         // Balloon mechanics
         function pumpBalloon(intensity) {
-            const pumpAmount = intensity * 0.5;
+            const pumpAmount = intensity * 0.15;
             gameState.balloonSize = Math.min(gameState.balloonSize + pumpAmount, gameState.maxBalloonSize);
             
             updateBalloon();
@@ -905,7 +905,7 @@
                 lastMotion: 0,
                 motionThreshold: 12,
                 deflateRate: 2.5,
-                maxBalloonSize: 100,
+                maxBalloonSize: 150,
                 scores: []
             };
             
