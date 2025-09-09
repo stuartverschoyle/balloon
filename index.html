@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Pump Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(45deg, #87CEEB, #98FB98, #FFB6C1);
+            background-size: 400% 400%;
+            animation: backgroundShift 8s ease-in-out infinite;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .setup-screen {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .setup-screen h1 {
+            color: #FF6B6B;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-selector {
+            margin: 20px 0;
+        }
+
+        .player-selector label {
+            font-size: 1.2em;
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        .player-selector select {
+            font-size: 1.1em;
+            padding: 10px;
+            border: 3px solid #4ECDC4;
+            border-radius: 10px;
+            background: white;
+            margin-left: 10px;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3em;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .game-screen {
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .game-header {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .current-player {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            font-size: 1.4em;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 15px;
+        }
+
+        .balloon-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .balloon {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+        }
+
+        .balloon-body {
+            background: linear-gradient(45deg, #FF69B4, #FF1493);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balloon-face {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .eyes {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .eye {
+            width: 25px;
+            height: 25px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            border: 3px solid #333;
+        }
+
+        .pupil {
+            width: 15px;
+            height: 15px;
+            background: #333;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s;
+        }
+
+        .mouth {
+            width: 30px;
+            height: 15px;
+            border: 3px solid #333;
+            border-top: none;
+            border-radius: 0 0 30px 30px;
+            margin: 0 auto;
+        }
+
+        .balloon-string {
+            width: 3px;
+            height: 150px;
+            background: #8B4513;
+            margin: 0 auto;
+            border-radius: 2px;
+        }
+
+        .pump {
+            width: 80px;
+            height: 40px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .pump-handle {
+            width: 60px;
+            height: 8px;
+            background: #8B4513;
+            border-radius: 4px;
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            max-width: 300px;
+        }
+
+        .instructions p {
+            color: #333;
+            font-size: 1.1em;
+            margin: 5px 0;
+        }
+
+        .progress-bar {
+            width: 80%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4ECDC4, #45B7B8);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .scoreboard {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .winner {
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+
+        .celebration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #FF6B6B;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .motion-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .permission-alert {
+            background: rgba(255, 255, 0, 0.9);
+            color: #333;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px;
+            border: 3px solid #FF6B6B;
+        }
+
+        @media (max-width: 480px) {
+            .setup-screen h1 {
+                font-size: 2em;
+            }
+            
+            .current-player {
+                font-size: 1.5em;
+            }
+            
+            .instructions {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Setup Screen -->
+        <div class="setup-screen" id="setupScreen">
+            <h1>🎈 Balloon Pump Challenge</h1>
+            <p style="color: #666; margin-bottom: 20px;">SHAKE your phone like a can of soda to pump the balloon!</p>
+            
+            <div class="player-selector">
+                <label for="playerCount">Players:</label>
+                <select id="playerCount">
+                    <option value="1">1 Player</option>
+                    <option value="2">2 Players</option>
+                    <option value="3">3 Players</option>
+                    <option value="4">4 Players</option>
+                </select>
+            </div>
+            
+            <button class="start-btn" onclick="startGame()">Start Game</button>
+            
+            <div class="permission-alert" id="permissionAlert" style="display: none;">
+                📱 <strong>Enable Motion Sensors!</strong><br>
+                iPhone: Settings → Safari → Motion & Orientation Access → ON<br>
+                Android: Allow motion permission when prompted
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+            <div class="game-header">
+                <div class="current-player" id="currentPlayer">Player 1's Turn</div>
+                <div class="timer" id="timer">Time: 30s</div>
+            </div>
+
+            <div class="instructions" id="instructions">
+                <p><strong>🎯 SHAKE your phone like a can of soda!</strong></p>
+                <p>⚡ More intense shaking = faster pumping</p>
+                <p>⚠️ Stop shaking = balloon deflates!</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="balloon-container">
+                <div class="balloon" id="balloon">
+                    <div class="balloon-body" id="balloonBody">
+                        <div class="balloon-face">
+                            <div class="eyes">
+                                <div class="eye">
+                                    <div class="pupil" id="leftPupil"></div>
+                                </div>
+                                <div class="eye">
+                                    <div class="pupil" id="rightPupil"></div>
+                                </div>
+                            </div>
+                            <div class="mouth" id="mouth"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="balloon-string"></div>
+            </div>
+
+            <div class="pump"></div>
+            <div class="pump-handle"></div>
+
+            <div class="motion-indicator" id="motionIndicator">
+                Shake: 0.0
+            </div>
+        </div>
+
+        <!-- Scoreboard -->
+        <div class="scoreboard" id="scoreboard">
+            <h2 style="text-align: center; color: #FF6B6B; margin-bottom: 20px;">🏆 Final Scores</h2>
+            <div id="scoreList"></div>
+            <button class="start-btn" onclick="resetGame()" style="margin-top: 20px;">Play Again</button>
+        </div>
+
+        <!-- Celebration Effects -->
+        <div class="celebration" id="celebration"></div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            players: [],
+            currentPlayer: 0,
+            totalPlayers: 1,
+            balloonSize: 0,
+            gameActive: false,
+            timeLeft: 30,
+            gameTimer: null,
+            lastMotion: 0,
+            motionThreshold: 1.5, // Lower threshold for easier activation
+            deflateRate: 0.5,
+            maxBalloonSize: 100,
+            scores: []
+        };
+
+        // Audio context for sound effects
+        let audioContext;
+        let sounds = {
+            pump: null,
+            pop: null,
+            deflate: null
+        };
+
+        // Motion detection variables
+        let lastAcceleration = { x: 0, y: 0, z: 0 };
+        let motionIntensity = 0;
+        let motionDetectionActive = false;
+
+        // Initialize audio
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Create sound effects
+        function createPumpSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        function createDeflateSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+            
+            gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function createPopSound() {
+            if (!audioContext) return;
+            
+            // Create a brief burst of noise for the pop
+            const bufferSize = audioContext.sampleRate * 0.2;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.pow((bufferSize - i) / bufferSize, 2);
+            }
+            
+            const source = audioContext.createBufferSource();
+            const gainNode = audioContext.createGain();
+            
+            source.buffer = buffer;
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            source.start(audioContext.currentTime);
+            
+            // Add the "Oh yeah!" voice effect
+            setTimeout(() => {
+                speakOhYeah();
+            }, 300);
+        }
+
+        function speakOhYeah() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance("Oh yeah!");
+                utterance.pitch = 0.8;
+                utterance.rate = 1.2;
+                utterance.volume = 0.8;
+                
+                // Try to find a male voice
+                const voices = speechSynthesis.getVoices();
+                const maleVoice = voices.find(voice => 
+                    voice.name.toLowerCase().includes('male') || 
+                    voice.name.toLowerCase().includes('david') ||
+                    voice.name.toLowerCase().includes('daniel')
+                );
+                
+                if (maleVoice) {
+                    utterance.voice = maleVoice;
+                }
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Start the game
+        function startGame() {
+            initAudio();
+            
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            gameState.totalPlayers = playerCount;
+            gameState.players = [];
+            gameState.scores = [];
+            
+            for (let i = 1; i <= playerCount; i++) {
+                gameState.players.push(`Player ${i}`);
+                gameState.scores.push({ player: `Player ${i}`, score: 0 });
+            }
+            
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+            
+            startPlayerTurn();
+        }
+
+        // Start individual player turn
+        function startPlayerTurn() {
+            gameState.currentPlayer = gameState.currentPlayer % gameState.totalPlayers;
+            gameState.balloonSize = 0;
+            gameState.timeLeft = 30;
+            gameState.gameActive = true;
+            
+            document.getElementById('currentPlayer').textContent = 
+                `${gameState.players[gameState.currentPlayer]}'s Turn`;
+            
+            updateBalloon();
+            updateProgressBar();
+            
+            // Start the timer
+            gameState.gameTimer = setInterval(() => {
+                gameState.timeLeft--;
+                document.getElementById('timer').textContent = `Time: ${gameState.timeLeft}s`;
+                
+                if (gameState.timeLeft <= 0) {
+                    endPlayerTurn();
+                }
+            }, 1000);
+            
+            // Start motion detection
+            requestDeviceOrientationPermission();
+        }
+
+        // Request device orientation permission (iOS 13+)
+        async function requestDeviceOrientationPermission() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission === 'granted') {
+                        startMotionDetection();
+                        document.getElementById('permissionAlert').style.display = 'none';
+                    } else {
+                        showPermissionAlert();
+                    }
+                } catch (error) {
+                    console.log('Permission request failed:', error);
+                    startMotionDetection(); // Try anyway
+                }
+            } else {
+                startMotionDetection();
+            }
+        }
+
+        function showPermissionAlert() {
+            document.getElementById('permissionAlert').style.display = 'block';
+            // Try to start anyway in case permissions are actually available
+            setTimeout(() => {
+                startMotionDetection();
+            }, 3000);
+        }
+
+        // Motion detection - FIXED VERSION
+        function startMotionDetection() {
+            motionDetectionActive = true;
+            
+            if (window.DeviceMotionEvent) {
+                console.log('Starting device motion detection...');
+                window.addEventListener('devicemotion', handleMotion, true);
+                
+                // Also try DeviceOrientationEvent as backup
+                window.addEventListener('deviceorientation', handleOrientation, true);
+            } else {
+                console.log('Device motion not supported, using mouse fallback');
+                // Fallback for desktop - use mouse movement
+                document.addEventListener('mousemove', handleMouseMotion, true);
+            }
+        }
+
+        function handleMotion(event) {
+            if (!gameState.gameActive || !motionDetectionActive) return;
+            
+            const acceleration = event.acceleration || event.accelerationIncludingGravity || { x: 0, y: 0, z: 0 };
+            
+            // Handle null values
+            const x = acceleration.x || 0;
+            const y = acceleration.y || 0;
+            const z = acceleration.z || 0;
+            
+            // Calculate total motion intensity across all axes (like shaking a can)
+            const xMotion = Math.abs(x - lastAcceleration.x);
+            const yMotion = Math.abs(y - lastAcceleration.y);
+            const zMotion = Math.abs(z - lastAcceleration.z);
+            
+            // Combine all motion for total shake intensity
+            motionIntensity = Math.sqrt(xMotion * xMotion + yMotion * yMotion + zMotion * zMotion);
+            motionIntensity = Math.min(motionIntensity, 15); // Cap at 15 for very intense shaking
+            
+            console.log('Motion detected:', motionIntensity.toFixed(2));
+            
+            document.getElementById('motionIndicator').textContent = 
+                `Shake: ${motionIntensity.toFixed(1)}`;
+            
+            // Update balloon based on motion (lower threshold for easier gameplay)
+            if (motionIntensity > gameState.motionThreshold) {
+                pumpBalloon(motionIntensity);
+            } else {
+                deflateBalloon();
+            }
+            
+            lastAcceleration = { x: x, y: y, z: z };
+        }
+
+        // Alternative orientation detection
+        function handleOrientation(event) {
+            if (!gameState.gameActive || !motionDetectionActive) return;
+            
+            // Use orientation changes as motion detection
+            const alpha = event.alpha || 0;
+            const beta = event.beta || 0;
+            const gamma = event.gamma || 0;
+            
+            if (lastAcceleration.alpha !== undefined) {
+                const alphaChange = Math.abs(alpha - lastAcceleration.alpha);
+                const betaChange = Math.abs(beta - lastAcceleration.beta);
+                const gammaChange = Math.abs(gamma - lastAcceleration.gamma);
+                
+                motionIntensity = (alphaChange + betaChange + gammaChange) * 0.1;
+                motionIntensity = Math.min(motionIntensity, 10);
+                
+                document.getElementById('motionIndicator').textContent = 
+                    `Orient: ${motionIntensity.toFixed(1)}`;
+                
+                if (motionIntensity > 2) {
+                    pumpBalloon(motionIntensity);
+                } else {
+                    deflateBalloon();
+                }
+            }
+            
+            lastAcceleration.alpha = alpha;
+            lastAcceleration.beta = beta;
+            lastAcceleration.gamma = gamma;
+        }
+
+        // Desktop fallback - more sensitive mouse movement
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let mouseMotionIntensity = 0;
+
+        function handleMouseMotion(event) {
+            if (!gameState.gameActive) return;
+            
+            const currentMouseX = event.clientX;
+            const currentMouseY = event.clientY;
+            
+            const xMotion = Math.abs(currentMouseX - lastMouseX);
+            const yMotion = Math.abs(currentMouseY - lastMouseY);
+            
+            // Combine X and Y motion for total movement
+            mouseMotionIntensity = Math.sqrt(xMotion * xMotion + yMotion * yMotion) * 0.05;
+            
+            document.getElementById('motionIndicator').textContent = 
+                `Shake: ${mouseMotionIntensity.toFixed(1)} (Mouse)`;
+            
+            if (mouseMotionIntensity > 1.5) {
+                pumpBalloon(mouseMotionIntensity);
+            } else {
+                deflateBalloon();
+            }
+            
+            lastMouseX = currentMouseX;
+            lastMouseY = currentMouseY;
+        }
+
+        // Balloon mechanics
+        function pumpBalloon(intensity) {
+            const pumpAmount = intensity * 0.5;
+            gameState.balloonSize = Math.min(gameState.balloonSize + pumpAmount, gameState.maxBalloonSize);
+            
+            updateBalloon();
+            updateProgressBar();
+            createPumpSound();
+            
+            // Animate the face
+            animateFace('excited');
+            
+            // Check for pop
+            if (gameState.balloonSize >= gameState.maxBalloonSize) {
+                balloonPop();
+            }
+        }
+
+        function deflateBalloon() {
+            gameState.balloonSize = Math.max(gameState.balloonSize - gameState.deflateRate, 0);
+            updateBalloon();
+            updateProgressBar();
+            
+            if (gameState.balloonSize > 0 && gameState.balloonSize < gameState.maxBalloonSize * 0.8) {
+                createDeflateSound();
+                animateFace('sad');
+            }
+        }
+
+        function updateBalloon() {
+            const balloon = document.getElementById('balloonBody');
+            const size = 100 + (gameState.balloonSize * 2); // Base size 100px, grows to 300px
+            
+            balloon.style.width = `${size}px`;
+            balloon.style.height = `${size * 1.2}px`; // Slightly taller than wide
+            
+            // Change color as it grows
+            const hue = Math.max(0, 320 - (gameState.balloonSize * 2)); // Pink to red
+            balloon.style.background = `linear-gradient(45deg, hsl(${hue}, 80%, 60%), hsl(${hue - 20}, 80%, 50%))`;
+        }
+
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progressFill');
+            const percentage = (gameState.balloonSize / gameState.maxBalloonSize) * 100;
+            progressFill.style.width = `${percentage}%`;
+        }
+
+        function animateFace(emotion) {
+            const leftPupil = document.getElementById('leftPupil');
+            const rightPupil = document.getElementById('rightPupil');
+            const mouth = document.getElementById('mouth');
+            
+            if (emotion === 'excited') {
+                leftPupil.style.transform = 'translate(-50%, -60%)';
+                rightPupil.style.transform = 'translate(-50%, -60%)';
+                mouth.style.borderRadius = '30px 30px 0 0';
+                mouth.style.borderTop = '3px solid #333';
+                mouth.style.borderBottom = 'none';
+            } else if (emotion === 'sad') {
+                leftPupil.style.transform = 'translate(-50%, -40%)';
+                rightPupil.style.transform = 'translate(-50%, -40%)';
+                mouth.style.borderRadius = '0 0 30px 30px';
+                mouth.style.borderTop = 'none';
+                mouth.style.borderBottom = '3px solid #333';
+            }
+        }
+
+        function balloonPop() {
+            gameState.gameActive = false;
+            motionDetectionActive = false;
+            createPopSound();
+            createConfetti();
+            
+            // Record score
+            gameState.scores[gameState.currentPlayer].score = gameState.timeLeft;
+            
+            // Show pop animation
+            const balloon = document.getElementById('balloon');
+            balloon.style.transform = 'scale(1.5)';
+            balloon.style.opacity = '0.3';
+            
+            setTimeout(() => {
+                endPlayerTurn();
+            }, 2000);
+        }
+
+        function endPlayerTurn() {
+            gameState.gameActive = false;
+            motionDetectionActive = false;
+            clearInterval(gameState.gameTimer);
+            
+            // Record score if balloon didn't pop
+            if (gameState.balloonSize < gameState.maxBalloonSize) {
+                gameState.scores[gameState.currentPlayer].score = Math.floor(gameState.balloonSize);
+            }
+            
+            // Reset balloon
+            const balloon = document.getElementById('balloon');
+            balloon.style.transform = 'scale(1)';
+            balloon.style.opacity = '1';
+            
+            // Stop motion detection
+            window.removeEventListener('devicemotion', handleMotion, true);
+            window.removeEventListener('deviceorientation', handleOrientation, true);
+            document.removeEventListener('mousemove', handleMouseMotion, true);
+            
+            // Next player
+            gameState.currentPlayer++;
+            
+            if (gameState.currentPlayer >= gameState.totalPlayers) {
+                showFinalScores();
+            } else {
+                setTimeout(() => {
+                    startPlayerTurn();
+                }, 2000);
+            }
+        }
+
+        function showFinalScores() {
+            // Sort scores
+            gameState.scores.sort((a, b) => b.score - a.score);
+            
+            // Hide game screen, show scoreboard
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('scoreboard').style.display = 'block';
+            
+            const scoreList = document.getElementById('scoreList');
+            scoreList.innerHTML = '';
+            
+            gameState.scores.forEach((score, index) => {
+                const scoreItem = document.createElement('div');
+                scoreItem.className = `score-item ${index === 0 ? 'winner' : ''}`;
+                scoreItem.innerHTML = `
+                    <span>${index + 1}. ${score.player}</span>
+                    <span>${score.score} points</span>
+                `;
+                scoreList.appendChild(scoreItem);
+            });
+            
+            createConfetti();
+        }
+
+        function createConfetti() {
+            const celebration = document.getElementById('celebration');
+            celebration.innerHTML = '';
+            
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7B8', '#96CEB4', '#FECA57', '#FF9FF3'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                celebration.appendChild(confetti);
+            }
+            
+            setTimeout(() => {
+                celebration.innerHTML = '';
+            }, 5000);
+        }
+
+        function resetGame() {
+            // Reset game state
+            gameState = {
+                players: [],
+                currentPlayer: 0,
+                totalPlayers: 1,
+                balloonSize: 0,
+                gameActive: false,
+                timeLeft: 30,
+                gameTimer: null,
+                lastMotion: 0,
+                motionThreshold: 1.5,
+                deflateRate: 0.5,
+                maxBalloonSize: 100,
+                scores: []
+            };
+            
+            // Reset UI
+            document.getElementById('scoreboard').style.display = 'none';
+            document.getElementById('setupScreen').style.display = 'block';
+            
+            // Stop motion detection
+            motionDetectionActive = false;
+            window.removeEventListener('devicemotion', handleMotion, true);
+            window.removeEventListener('deviceorientation', handleOrientation, true);
+            document.removeEventListener('mousemove', handleMouseMotion, true);
+        }
+
+        // Load voices when available
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = () => {
+                // Voices loaded
+            };
+        }
+
+        // Debug function to test if motion is working
+        function testMotion() {
+            console.log('Testing motion detection...');
+            if (window.DeviceMotionEvent) {
+                console.log('DeviceMotionEvent is supported');
+            } else {
+                console.log('DeviceMotionEvent is NOT supported');
+            }
+            
+            if (window.DeviceOrientationEvent) {
+                console.log('DeviceOrientationEvent is supported');
+            } else {
+                console.log('DeviceOrientationEvent is NOT supported');
+            }
+        }
+        
+        // Call test on load
+        testMotion();
+    </script>
+</body>
+</html>
